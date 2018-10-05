@@ -11,6 +11,7 @@ use Relay\Relay;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 
+
 $capsule = new Capsule;
 
 $capsule->addConnection([
@@ -30,6 +31,8 @@ $capsule->setAsGlobal();
 // Setup the Eloquent ORM... (optional; unless you've used setEventDispatcher())
 $capsule->bootEloquent();
 
+
+
 $request = Zend\Diactoros\ServerRequestFactory::fromGlobals(
     $_SERVER,
     $_GET,
@@ -46,6 +49,7 @@ $twig = new \Twig_Environment($loader, array(
 
 $router = new Aura\Router\RouterContainer();
 $map = $router->getMap();
+
 $map->get('todo.list', '/', function ($request) use ($twig) {
     // $tasks = [
     //     [
@@ -77,6 +81,24 @@ $map->get('todo.list', '/', function ($request) use ($twig) {
     ]));
     return $response;
 });
+
+$map->post('todo.add', '/add', function ($request) {
+
+    $data = $request->getParsedBody();
+
+    $task = new Task();
+
+    $task->description = $data['description'];
+    $task->save();
+
+    $response = new Zend\Diactoros\
+
+    Response\HtmlResponse($twig->render('template.twig', [
+        'tasks' => $tasks
+    ]));
+    return $response;
+});
+
 
 $relay = new Relay([
     new Middlewares\AuraRouter($router),
