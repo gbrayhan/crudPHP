@@ -81,23 +81,50 @@ $map->get('todo.list', '/', function ($request) use ($twig) {
     ]));
     return $response;
 });
-
 $map->post('todo.add', '/add', function ($request) {
 
-    $data = $request->getParsedBody();
+    $data = $request->getParsedBody(); //Regresa Arreglo Asociativo Elements Form
 
     $task = new Task();
 
     $task->description = $data['description'];
     $task->save();
 
-    $response = new Zend\Diactoros\
-
-    Response\HtmlResponse($twig->render('template.twig', [
-        'tasks' => $tasks
-    ]));
+    $response = new Zend\Diactoros\Response\RedirectResponse('/');
     return $response;
 });
+$map->get('todo.check', '/check/{id}', function ($request) {
+
+    $id = $request->getAttribute('id'); //Regresa Arreglo Asociativo Elements Form
+
+    $task = Task::find($id);
+    $task->done = true;
+    $task->save();
+
+    $response = new Zend\Diactoros\Response\RedirectResponse('/');
+    return $response;
+});
+$map->get('todo.uncheck', '/uncheck/{id}', function ($request) {
+
+    $id = $request->getAttribute('id'); //Regresa Arreglo Asociativo Elements Form
+
+    $task = Task::find($id);
+    $task->done = false;
+    $task->save();
+
+    $response = new Zend\Diactoros\Response\RedirectResponse('/');
+    return $response;
+});
+$map->get('todo.delete', '/delete/{id}', function ($request) {
+
+    $id = $request->getAttribute('id'); //Regresa Arreglo Asociativo Elements Form
+    $task = Task::find($id);
+    $task->delete();
+
+    $response = new Zend\Diactoros\Response\RedirectResponse('/');
+    return $response;
+});
+
 
 
 $relay = new Relay([
