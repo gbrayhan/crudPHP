@@ -4,11 +4,10 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once 'vendor/autoload.php';
-require_once 'Task.php';
+require_once '../vendor/autoload.php';
 
+use App\Models\{Task};
 use Relay\Relay;
-
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 
@@ -31,8 +30,6 @@ $capsule->setAsGlobal();
 // Setup the Eloquent ORM... (optional; unless you've used setEventDispatcher())
 $capsule->bootEloquent();
 
-
-
 $request = Zend\Diactoros\ServerRequestFactory::fromGlobals(
     $_SERVER,
     $_GET,
@@ -41,7 +38,9 @@ $request = Zend\Diactoros\ServerRequestFactory::fromGlobals(
     $_FILES
 );
 
-$loader = new Twig_Loader_Filesystem('.');
+
+
+$loader = new Twig_Loader_Filesystem('../Views');
 $twig = new \Twig_Environment($loader, array(
     'debug' => true,
     'cache' => false,
@@ -51,36 +50,18 @@ $router = new Aura\Router\RouterContainer();
 $map = $router->getMap();
 
 $map->get('todo.list', '/', function ($request) use ($twig) {
-    // $tasks = [
-    //     [
-    //         'id' => 1,
-    //         'description' => 'Aprender inglés',
-    //         'done' => false
-    //     ],
-    //     [
-    //         'id' => 1,
-    //         'description' => 'Hacer la tarea',
-    //         'done' => true
-    //     ],
-    //     [
-    //         'id' => 1,
-    //         'description' => 'Pasear al perro',
-    //         'done' => false
-    //     ],
-    //     [
-    //         'id' => 1,
-    //         'description' => 'Ver el curso de introducción a PHP',
-    //         'done' => false
-    //     ]
-    // ];
 
-    $tasks=Task::all();
+    $tasks = Task::all();
 
-    $response = new Zend\Diactoros\Response\HtmlResponse($twig->render('template.twig', [
+    $response = new Zend\Diactoros\Response\HtmlResponse($twig->render('index.twig', [
         'tasks' => $tasks
     ]));
     return $response;
 });
+
+
+
+
 $map->post('todo.add', '/add', function ($request) {
 
     $data = $request->getParsedBody(); //Regresa Arreglo Asociativo Elements Form
@@ -132,6 +113,7 @@ $relay = new Relay([
     new Middlewares\RequestHandler()
 ]);
 
+
 $response = $relay->handle($request);
 
 foreach ($response->getHeaders() as $name => $values) {
@@ -139,4 +121,5 @@ foreach ($response->getHeaders() as $name => $values) {
         header(sprintf('%s: %s', $name, $value), false);
     }
 }
+
 echo $response->getBody();
